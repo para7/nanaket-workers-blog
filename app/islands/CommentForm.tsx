@@ -59,24 +59,22 @@ export default function CommentForm({ postId }: { postId: number }) {
   }
 
   return (
-    <div class="bg-gray-50 rounded-lg p-6">
-      <h3 class="text-xl font-semibold mb-4">コメントを投稿</h3>
+    <div>
+      <h3>コメントを投稿</h3>
 
       {errors.length > 0 && (
-        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <ul class="list-disc list-inside text-red-700">
+        <article style="background-color: var(--pico-del-color); border: 1px solid var(--pico-del-color);">
+          <ul>
             {errors.map((error, index) => (
               <li key={index}>{error}</li>
             ))}
           </ul>
-        </div>
+        </article>
       )}
 
       <form onSubmit={handleSubmit}>
-        <div class="mb-4">
-          <label htmlFor="nickname" class="block text-sm font-medium text-gray-700 mb-2">
-            ニックネーム <span class="text-red-500">*</span>
-          </label>
+        <label htmlFor="nickname">
+          ニックネーム <abbr title="required">*</abbr>
           <input
             type="text"
             id="nickname"
@@ -85,16 +83,13 @@ export default function CommentForm({ postId }: { postId: number }) {
             maxLength={50}
             required
             disabled={isSubmitting}
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 focus:border-transparent disabled:bg-gray-100 transition-all"
             placeholder="名前を入力してください"
           />
-          <p class="mt-1 text-sm text-gray-500">{nickname.length}/50文字</p>
-        </div>
+          <small>{nickname.length}/50文字</small>
+        </label>
 
-        <div class="mb-4">
-          <label htmlFor="content" class="block text-sm font-medium text-gray-700 mb-2">
-            コメント <span class="text-red-500">*</span>
-          </label>
+        <label htmlFor="content">
+          コメント <abbr title="required">*</abbr>
           <textarea
             id="content"
             value={content}
@@ -103,17 +98,12 @@ export default function CommentForm({ postId }: { postId: number }) {
             required
             disabled={isSubmitting}
             rows={4}
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 focus:border-transparent disabled:bg-gray-100 transition-all"
             placeholder="コメントを入力してください"
           />
-          <p class="mt-1 text-sm text-gray-500">{content.length}/1000文字</p>
-        </div>
+          <small>{content.length}/1000文字</small>
+        </label>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          class="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg border-none cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-        >
+        <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? '投稿中...' : 'コメントを投稿'}
         </button>
       </form>
