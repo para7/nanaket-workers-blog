@@ -1,0 +1,58 @@
+.container {
+  min-height: 100vh;
+}
+
+.inner {
+  max-width: 56rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2rem 1rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.postsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.postCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: box-shadow 0.15s ease-in-out;
+}
+
+.postCard:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.postLink {
+  display: block;
+  text-decoration: none;
+}
+
+.postTitle {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #2563eb;
+  transition: color 0.15s ease-in-out;
+}
+
+.postLink:hover .postTitle {
+  color: #1e40af;
+}
+
+.postDate {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #6b7280;
+}

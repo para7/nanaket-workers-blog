@@ -1,1 +1,4 @@
-@import 'tailwindcss' source('../app');
+/* Pico CSS をメインフレームワークとして読み込み */
+@import "@picocss/pico/css/pico.min.css";
+
+/* カスタムスタイル */
