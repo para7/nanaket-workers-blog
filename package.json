@@ -16,15 +16,17 @@
   "dependencies": {
     "drizzle-orm": "^0.44.7",
     "hono": "^4.10.7",
-    "honox": "^0.1.51"
+    "honox": "^0.1.51",
+    "marked": "^17.0.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250214.0",
     "@hono/vite-build": "^1.3.0",
     "@hono/vite-dev-server": "^0.18.2",
-    "@tailwindcss/vite": "^4.0.9",
+    "@tailwindcss/vite": "^4.1.17",
+    "@types/marked": "^6.0.0",
     "drizzle-kit": "^0.31.7",
-    "tailwindcss": "^4.0.9",
+    "tailwindcss": "^4.1.17",
     "vite": "^6.3.5",
     "wrangler": "^4.4.0"
   }

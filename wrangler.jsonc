@@ -14,7 +14,7 @@
 			"binding": "nanaket_blog",
 			"database_name": "nanaket-blog",
 			"database_id": "66ba0f52-7d97-4218-9477-aa1954b6c2e8",
-			"remote": true
+			"migrations_dir": "drizzle/migrations"
 		}
 	]
 	// "vars": {
