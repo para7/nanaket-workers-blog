@@ -3,9 +3,7 @@
 	"name": "nanaket-workers-blog",
 	"main": "./dist/index.js",
 	"compatibility_date": "2025-11-26",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
+	"compatibility_flags": ["nodejs_compat"],
 	"assets": {
 		"directory": "./dist"
 	},
