@@ -1,4 +1,5 @@
 /* Pico CSS をメインフレームワークとして読み込み */
 @import "@picocss/pico/css/pico.min.css";
 
-/* カスタムスタイル */
+/* Tailwind CSS を補助的なユーティリティとして読み込み */
+@import "tailwindcss";
