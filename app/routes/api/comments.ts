@@ -2,11 +2,33 @@ import { eq } from "drizzle-orm";
 import { createRoute } from "honox/factory";
 import { comments, posts } from "../../../drizzle/schema";
 import { getDb } from "../../lib/db";
+import { getCookie, setCookie } from "hono/cookie";
 
 export const POST = createRoute(async (c) => {
 	try {
 		const body = await c.req.json();
 		const { postId, nickname, content } = body;
+
+		// IPアドレスを取得 (Cloudflare Workers環境)
+		const ipAddress =
+			c.req.header("CF-Connecting-IP") ||
+			c.req.header("X-Forwarded-For") ||
+			c.req.header("X-Real-IP") ||
+			null;
+
+		// セッションIDを取得または生成
+		let sessionId = getCookie(c, "session_id");
+		if (!sessionId) {
+			sessionId = crypto.randomUUID();
+			// Cookieに保存 (1年間有効)
+			setCookie(c, "session_id", sessionId, {
+				path: "/",
+				maxAge: 60 * 60 * 24 * 365, // 1年
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
+		}
 
 		// バリデーション
 		const errors: string[] = [];
@@ -54,6 +76,8 @@ export const POST = createRoute(async (c) => {
 			postId,
 			nickname,
 			content,
+			ipAddress,
+			sessionId,
 		});
 
 		return c.json({
