@@ -45,7 +45,7 @@ export default createRoute(async (c) => {
 
 			<article>
 				<header>
-					<h1>{post.title}</h1>
+					<h1 class="text-5xl">{post.title}</h1>
 					{post.publishedAt && (
 						<p>
 							<time>
