@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
+import { getCookie, setCookie } from "hono/cookie";
 import { createRoute } from "honox/factory";
 import { comments, posts } from "../../../drizzle/schema";
 import { getDb } from "../../lib/db";
-import { getCookie, setCookie } from "hono/cookie";
 
 export const POST = createRoute(async (c) => {
 	try {
