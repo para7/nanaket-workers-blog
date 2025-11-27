@@ -17,7 +17,7 @@ export default jsxRenderer(({ children, title }) => {
 					<nav>
 						<ul>
 							<li>
-								<strong>
+								<strong class="text-3xl">
 									<a href="/">nanaket-workers-blog</a>
 								</strong>
 							</li>

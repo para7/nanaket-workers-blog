@@ -23,7 +23,7 @@ export default createRoute(async (c) => {
 			{postsList.map((post) => (
 				<article key={post.id}>
 					<hgroup>
-						<h2>
+						<h2 class="text-4xl">
 							<a href={`/posts/${post.slug}`}>{post.title}</a>
 						</h2>
 						{post.publishedAt && (
