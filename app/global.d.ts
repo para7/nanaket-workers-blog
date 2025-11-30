@@ -1,9 +1,12 @@
 import type {} from "hono";
 import type { D1Database } from "@cloudflare/workers-types";
+import type { IUsecases } from "./usecases";
 
 declare module "hono" {
 	interface Env {
-		Variables: Record<string, never>;
+		Variables: {
+			usecases: IUsecases;
+		};
 		Bindings: {
 			nanaket_blog: D1Database;
 		};
