@@ -1,13 +1,13 @@
-import { eq } from "drizzle-orm";
 import { getCookie, setCookie } from "hono/cookie";
 import { createRoute } from "honox/factory";
-import { comments, posts } from "../../../drizzle/schema";
-import { getDb } from "../../lib/db";
+import { NotFoundError, ValidationError } from "../../types/errors";
 
 export const POST = createRoute(async (c) => {
 	try {
-		const body = await c.req.json();
-		const { postId, nickname, content } = body;
+		const formData = await c.req.formData();
+		const postIdStr = formData.get("postId") as string;
+		const nickname = formData.get("nickname") as string;
+		const content = formData.get("content") as string;
 
 		// IPアドレスを取得 (Cloudflare Workers環境)
 		const ipAddress =
@@ -30,65 +30,40 @@ export const POST = createRoute(async (c) => {
 			});
 		}
 
-		// バリデーション
-		const errors: string[] = [];
-
-		if (!postId || typeof postId !== "number") {
-			errors.push("記事IDが不正です");
-		}
-
-		if (!nickname || typeof nickname !== "string") {
-			errors.push("ニックネームは必須です");
-		} else if (nickname.length < 1 || nickname.length > 50) {
-			errors.push("ニックネームは1-50文字で入力してください");
-		}
-
-		if (!content || typeof content !== "string") {
-			errors.push("コメント内容は必須です");
-		} else if (content.length < 1 || content.length > 1000) {
-			errors.push("コメント内容は1-1000文字で入力してください");
-		}
-
-		if (errors.length > 0) {
-			return c.json({ success: false, errors }, 400);
-		}
-
-		const db = getDb(c);
-
-		// 記事が存在するか確認
-		const postResult = await db
-			.select({ id: posts.id, slug: posts.slug })
-			.from(posts)
-			.where(eq(posts.id, postId))
-			.limit(1);
-
-		if (postResult.length === 0) {
-			return c.json(
-				{ success: false, errors: ["指定された記事が見つかりません"] },
-				404,
-			);
-		}
-
-		const post = postResult[0];
-
-		// コメントを挿入
-		await db.insert(comments).values({
-			postId,
+		// Usecaseを呼び出し（ValidationError or NotFoundErrorがthrowされる可能性）
+		const postSlug = await c.var.usecases.comments.createComment({
+			postIdStr,
 			nickname,
 			content,
 			ipAddress,
 			sessionId,
 		});
 
-		return c.json({
-			success: true,
-			redirectTo: `/posts/${post.slug}`,
-		});
+		// 成功時
+		return c.redirect(`/posts/${postSlug}?success=1`);
 	} catch (error) {
+		// バリデーションエラー
+		if (error instanceof ValidationError) {
+			const formData = await c.req.formData();
+			const postIdStr = formData.get("postId") as string;
+			const nickname = formData.get("nickname") as string;
+			const content = formData.get("content") as string;
+
+			const errorParam = encodeURIComponent(error.errors.join("|"));
+			return c.redirect(
+				`/posts/${postIdStr}?error=${errorParam}&nickname=${encodeURIComponent(nickname || "")}&content=${encodeURIComponent(content || "")}`,
+			);
+		}
+
+		// 記事が見つからない
+		if (error instanceof NotFoundError) {
+			const errorParam = encodeURIComponent(error.message);
+			return c.redirect(`/?error=${errorParam}`);
+		}
+
+		// 予期しないエラー
 		console.error("Comment submission error:", error);
-		return c.json(
-			{ success: false, errors: ["コメントの投稿に失敗しました"] },
-			500,
-		);
+		const errorParam = encodeURIComponent("コメントの投稿に失敗しました");
+		return c.redirect(`/?error=${errorParam}`);
 	}
 });
