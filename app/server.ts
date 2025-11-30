@@ -1,6 +1,6 @@
 import { showRoutes } from "hono/dev";
-import { createApp } from "honox/server";
 import { createMiddleware } from "hono/factory";
+import { createApp } from "honox/server";
 import { getDb } from "./lib/db";
 import { repositories } from "./repositories";
 import { usecases } from "./usecases";
