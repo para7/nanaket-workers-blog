@@ -1,10 +1,7 @@
 import { createRoute } from "honox/factory";
-import { createContainer } from "../lib/container";
 
 export default createRoute(async (c) => {
-	const { usecases } = createContainer(c);
-
-	const postsList = await usecases.posts.getPublishedPosts();
+	const postsList = await c.var.usecases.posts.getPublishedPosts();
 
 	return c.render(
 		<div>

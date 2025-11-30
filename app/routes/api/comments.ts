@@ -1,5 +1,4 @@
 import { createRoute } from "honox/factory";
-import { createContainer } from "../../lib/container";
 import { NotFoundError, ValidationError } from "../../types/errors";
 
 export const POST = createRoute(async (c) => {
@@ -9,10 +8,8 @@ export const POST = createRoute(async (c) => {
 		const nickname = formData.get("nickname") as string;
 		const content = formData.get("content") as string;
 
-		const { usecases } = createContainer(c);
-
 		// Usecaseを呼び出し（ValidationError or NotFoundErrorがthrowされる可能性）
-		const postSlug = await usecases.comments.createComment({
+		const postSlug = await c.var.usecases.comments.createComment({
 			postIdStr,
 			nickname,
 			content,

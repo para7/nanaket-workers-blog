@@ -10,6 +10,6 @@ export interface IUsecases {
 
 // Usecasesファクトリ関数
 export const usecases = (repositories: IRepositories): IUsecases => ({
-	posts: postsUsecase(repositories.posts, repositories.comments),
-	comments: commentsUsecase(repositories.comments, repositories.posts),
+	posts: postsUsecase(repositories),
+	comments: commentsUsecase(repositories),
 });

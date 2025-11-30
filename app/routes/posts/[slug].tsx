@@ -1,6 +1,5 @@
 import { createRoute } from "honox/factory";
 import CommentForm from "../../components/CommentForm";
-import { createContainer } from "../../lib/container";
 import { NotFoundError } from "../../types/errors";
 
 export default createRoute(async (c) => {
@@ -10,10 +9,8 @@ export default createRoute(async (c) => {
 		return c.notFound();
 	}
 
-	const { usecases } = createContainer(c);
-
 	try {
-		const viewModel = await usecases.posts.getPostDetailBySlug(slug);
+		const viewModel = await c.var.usecases.posts.getPostDetailBySlug(slug);
 		const { post, comments: postComments } = viewModel;
 
 		// クエリパラメータ処理（UIレイヤーの責務）

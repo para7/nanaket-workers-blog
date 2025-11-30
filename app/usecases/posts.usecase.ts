@@ -1,10 +1,7 @@
 import { marked } from "marked";
+import type { IRepositories } from "../repositories";
+import type { Comment } from "../repositories/comments.repository";
 import type {
-	Comment,
-	ICommentsRepository,
-} from "../repositories/comments.repository";
-import type {
-	IPostsRepository,
 	PostDetail,
 	PostListItem,
 } from "../repositories/posts.repository";
@@ -26,16 +23,13 @@ export interface IPostsUsecase {
 }
 
 // Usecase関数（関数型アプローチ）
-export const postsUsecase = (
-	postsRepo: IPostsRepository,
-	commentsRepo: ICommentsRepository,
-): IPostsUsecase => ({
+export const postsUsecase = (repositories: IRepositories): IPostsUsecase => ({
 	getPublishedPosts: async () => {
-		return await postsRepo.findPublishedPosts();
+		return await repositories.posts.findPublishedPosts();
 	},
 
 	getPostDetailBySlug: async (slug: string) => {
-		const post = await postsRepo.findBySlug(slug);
+		const post = await repositories.posts.findBySlug(slug);
 		if (!post) {
 			throw new NotFoundError("記事が見つかりません");
 		}
@@ -44,7 +38,7 @@ export const postsUsecase = (
 		const htmlContent = await marked(post.content);
 
 		// コメント取得
-		const comments = await commentsRepo.findByPostId(post.id);
+		const comments = await repositories.comments.findByPostId(post.id);
 
 		return {
 			post: {
