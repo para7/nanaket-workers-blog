@@ -5,13 +5,16 @@ import { getDb } from "../../lib/db";
 
 export const POST = createRoute(async (c) => {
 	try {
-		const body = await c.req.json();
-		const { postId, nickname, content } = body;
+		const formData = await c.req.formData();
+		const postIdStr = formData.get("postId") as string;
+		const nickname = formData.get("nickname") as string;
+		const content = formData.get("content") as string;
 
 		// バリデーション
 		const errors: string[] = [];
 
-		if (!postId || typeof postId !== "number") {
+		const postId = Number.parseInt(postIdStr, 10);
+		if (!postIdStr || Number.isNaN(postId)) {
 			errors.push("記事IDが不正です");
 		}
 
@@ -27,10 +30,6 @@ export const POST = createRoute(async (c) => {
 			errors.push("コメント内容は1-1000文字で入力してください");
 		}
 
-		if (errors.length > 0) {
-			return c.json({ success: false, errors }, 400);
-		}
-
 		const db = getDb(c);
 
 		// 記事が存在するか確認
@@ -41,9 +40,14 @@ export const POST = createRoute(async (c) => {
 			.limit(1);
 
 		if (postResult.length === 0) {
-			return c.json(
-				{ success: false, errors: ["指定された記事が見つかりません"] },
-				404,
+			errors.push("指定された記事が見つかりません");
+		}
+
+		if (errors.length > 0) {
+			const post = postResult[0];
+			const errorParam = encodeURIComponent(errors.join("|"));
+			return c.redirect(
+				`/posts/${post?.slug || ""}?error=${errorParam}&nickname=${encodeURIComponent(nickname || "")}&content=${encodeURIComponent(content || "")}`,
 			);
 		}
 
@@ -56,15 +60,10 @@ export const POST = createRoute(async (c) => {
 			content,
 		});
 
-		return c.json({
-			success: true,
-			redirectTo: `/posts/${post.slug}`,
-		});
+		return c.redirect(`/posts/${post.slug}?success=1`);
 	} catch (error) {
 		console.error("Comment submission error:", error);
-		return c.json(
-			{ success: false, errors: ["コメントの投稿に失敗しました"] },
-			500,
-		);
+		const errorParam = encodeURIComponent("コメントの投稿に失敗しました");
+		return c.redirect(`/?error=${errorParam}`);
 	}
 });

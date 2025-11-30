@@ -2,12 +2,16 @@ import { asc, eq } from "drizzle-orm";
 import { createRoute } from "honox/factory";
 import { marked } from "marked";
 import { comments, posts } from "../../../drizzle/schema";
-import CommentForm from "../../islands/CommentForm";
+import CommentForm from "../../components/CommentForm";
 import { getDb } from "../../lib/db";
 
 export default createRoute(async (c) => {
 	const slug = c.req.param("slug");
 	const db = getDb(c);
+
+	if (!slug) {
+		return c.notFound();
+	}
 
 	// 記事を取得
 	const postResult = await db
@@ -31,6 +35,15 @@ export default createRoute(async (c) => {
 		.from(comments)
 		.where(eq(comments.postId, post.id))
 		.orderBy(asc(comments.createdAt));
+
+	// クエリパラメータからエラーや入力値を取得
+	const errorParam = c.req.query("error");
+	const successParam = c.req.query("success");
+	const nicknameParam = c.req.query("nickname") || "";
+	const contentParam = c.req.query("content") || "";
+
+	const errors = errorParam ? decodeURIComponent(errorParam).split("|") : [];
+	const success = successParam === "1";
 
 	return c.render(
 		<div>
@@ -83,7 +96,13 @@ export default createRoute(async (c) => {
 					</div>
 				)}
 
-				<CommentForm postId={post.id} />
+				<CommentForm
+					postId={post.id}
+					errors={errors}
+					nickname={nicknameParam}
+					content={contentParam}
+					success={success}
+				/>
 			</section>
 		</div>,
 	);
