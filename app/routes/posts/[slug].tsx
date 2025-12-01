@@ -1,5 +1,7 @@
 import { createRoute } from "honox/factory";
+import BackToList from "../../components/BackToList";
 import CommentForm from "../../components/CommentForm";
+import CommentList from "../../components/CommentList";
 import { NotFoundError } from "../../types/errors";
 
 export default createRoute(async (c) => {
@@ -25,13 +27,7 @@ export default createRoute(async (c) => {
 		return c.render(
 			<div>
 				<title>{post.title} - nanaket-workers-blog</title>
-				<nav>
-					<ul>
-						<li>
-							<a href="/">← 記事一覧に戻る</a>
-						</li>
-					</ul>
-				</nav>
+				<BackToList />
 
 				<article>
 					<header>
@@ -55,23 +51,7 @@ export default createRoute(async (c) => {
 				<section>
 					<h2>コメント ({postComments.length})</h2>
 
-					{postComments.length > 0 && (
-						<div>
-							{postComments.map((comment) => (
-								<article key={comment.id}>
-									<header>
-										<strong>{comment.nickname}</strong>{" "}
-										<small>
-											<time>
-												{new Date(comment.createdAt).toLocaleString("ja-JP")}
-											</time>
-										</small>
-									</header>
-									<p style="white-space: pre-wrap">{comment.content}</p>
-								</article>
-							))}
-						</div>
-					)}
+					<CommentList comments={postComments} />
 
 					<CommentForm
 						postId={post.id}

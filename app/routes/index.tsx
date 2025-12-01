@@ -1,4 +1,5 @@
 import { createRoute } from "honox/factory";
+import PostCard from "../components/PostCard";
 
 export default createRoute(async (c) => {
 	const postsList = await c.var.usecases.posts.getPublishedPosts();
@@ -8,24 +9,13 @@ export default createRoute(async (c) => {
 			<title>nanaket-workers-blog (test)</title>
 			<h1>記事一覧</h1>
 			{postsList.map((post) => (
-				<article key={post.id}>
-					<hgroup>
-						<h2 class="text-4xl">
-							<a href={`/posts/${post.slug}`}>{post.title}</a>
-						</h2>
-						{post.publishedAt && (
-							<p>
-								<time>
-									{new Date(post.publishedAt).toLocaleDateString("ja-JP", {
-										year: "numeric",
-										month: "long",
-										day: "numeric",
-									})}
-								</time>
-							</p>
-						)}
-					</hgroup>
-				</article>
+				<PostCard
+					key={post.id}
+					id={post.id}
+					title={post.title}
+					slug={post.slug}
+					publishedAt={post.publishedAt}
+				/>
 			))}
 		</div>,
 	);
