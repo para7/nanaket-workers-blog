@@ -1,3 +1,4 @@
+import { getCookie, setCookie } from "hono/cookie";
 import { createRoute } from "honox/factory";
 import { NotFoundError, ValidationError } from "../../types/errors";
 
@@ -8,11 +9,34 @@ export const POST = createRoute(async (c) => {
 		const nickname = formData.get("nickname") as string;
 		const content = formData.get("content") as string;
 
+		// IPアドレスを取得 (Cloudflare Workers環境)
+		const ipAddress =
+			c.req.header("CF-Connecting-IP") ||
+			c.req.header("X-Forwarded-For") ||
+			c.req.header("X-Real-IP") ||
+			null;
+
+		// セッションIDを取得または生成
+		let sessionId = getCookie(c, "session_id");
+		if (!sessionId) {
+			sessionId = crypto.randomUUID();
+			// Cookieに保存 (1年間有効)
+			setCookie(c, "session_id", sessionId, {
+				path: "/",
+				maxAge: 60 * 60 * 24 * 365, // 1年
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
+		}
+
 		// Usecaseを呼び出し（ValidationError or NotFoundErrorがthrowされる可能性）
 		const postSlug = await c.var.usecases.comments.createComment({
 			postIdStr,
 			nickname,
 			content,
+			ipAddress,
+			sessionId,
 		});
 
 		// 成功時

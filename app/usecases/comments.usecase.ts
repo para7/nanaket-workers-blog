@@ -29,6 +29,8 @@ export const commentsUsecase = (
 			postId: validated.postId,
 			nickname: validated.nickname,
 			content: validated.content,
+			ipAddress: validated.ipAddress,
+			sessionId: validated.sessionId,
 		});
 
 		// 成功時は記事のslugを返す（リダイレクト用）

@@ -10,6 +10,8 @@ export type CreateCommentInput = {
 	postId: number;
 	nickname: string;
 	content: string;
+	ipAddress?: string | null;
+	sessionId?: string | null;
 };
 
 // Interface定義
@@ -35,6 +37,8 @@ export const commentsRepository = (
 			postId: input.postId,
 			nickname: input.nickname,
 			content: input.content,
+			ipAddress: input.ipAddress,
+			sessionId: input.sessionId,
 		});
 	},
 });

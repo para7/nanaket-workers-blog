@@ -4,12 +4,16 @@ export type CommentInput = {
 	postIdStr: string;
 	nickname: string;
 	content: string;
+	ipAddress?: string | null;
+	sessionId?: string | null;
 };
 
 export type ValidatedCommentInput = {
 	postId: number;
 	nickname: string;
 	content: string;
+	ipAddress?: string | null;
+	sessionId?: string | null;
 };
 
 export function validateCommentInput(
@@ -45,5 +49,7 @@ export function validateCommentInput(
 		postId,
 		nickname: input.nickname,
 		content: input.content,
+		ipAddress: input.ipAddress,
+		sessionId: input.sessionId,
 	};
 }

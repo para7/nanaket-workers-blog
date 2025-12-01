@@ -23,6 +23,8 @@ export const comments = sqliteTable(
 			.references(() => posts.id, { onDelete: "cascade" }),
 		nickname: text("nickname").notNull(),
 		content: text("content").notNull(),
+		ipAddress: text("ip_address"),
+		sessionId: text("session_id"),
 		createdAt: integer("created_at", { mode: "timestamp" })
 			.notNull()
 			.$defaultFn(() => new Date()),
