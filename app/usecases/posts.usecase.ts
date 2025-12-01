@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import type { IRepositories } from "../repositories";
-import type { Comment } from "../repositories/comments.repository";
+// import type { Comment } from "../repositories/comments.repository";
 import type {
 	PostDetail,
 	PostListItem,
@@ -13,7 +13,7 @@ export type PostDetailWithHtml = PostDetail & {
 
 export type PostDetailViewModel = {
 	post: PostDetailWithHtml;
-	comments: Comment[];
+	// comments: Comment[];
 };
 
 // Usecase Interface
@@ -37,15 +37,15 @@ export const postsUsecase = (repositories: IRepositories): IPostsUsecase => ({
 		// Markdownレンダリング（ビジネスロジック）
 		const htmlContent = await marked(post.content);
 
-		// コメント取得
-		const comments = await repositories.comments.findByPostId(post.id);
+		// // コメント取得
+		// const comments = await repositories.comments.findByPostId(post.id);
 
 		return {
 			post: {
 				...post,
 				htmlContent,
 			},
-			comments,
+			// comments,
 		};
 	},
 });

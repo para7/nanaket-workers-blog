@@ -1,7 +1,7 @@
 import { createRoute } from "honox/factory";
 import BackToList from "../../components/BackToList";
-import CommentForm from "../../components/CommentForm";
-import CommentList from "../../components/CommentList";
+// import CommentForm from "../../components/CommentForm";
+// import CommentList from "../../components/CommentList";
 import { NotFoundError } from "../../types/errors";
 
 export default createRoute(async (c) => {
@@ -13,16 +13,17 @@ export default createRoute(async (c) => {
 
 	try {
 		const viewModel = await c.var.usecases.posts.getPostDetailBySlug(slug);
-		const { post, comments: postComments } = viewModel;
+		const { post } = viewModel;
+		// const { post, comments: postComments } = viewModel;
 
-		// クエリパラメータ処理（UIレイヤーの責務）
-		const errorParam = c.req.query("error");
-		const successParam = c.req.query("success");
-		const nicknameParam = c.req.query("nickname") || "";
-		const contentParam = c.req.query("content") || "";
+		// // クエリパラメータ処理（UIレイヤーの責務）
+		// const errorParam = c.req.query("error");
+		// const successParam = c.req.query("success");
+		// const nicknameParam = c.req.query("nickname") || "";
+		// const contentParam = c.req.query("content") || "";
 
-		const errors = errorParam ? decodeURIComponent(errorParam).split("|") : [];
-		const success = successParam === "1";
+		// const errors = errorParam ? decodeURIComponent(errorParam).split("|") : [];
+		// const success = successParam === "1";
 
 		return c.render(
 			<div>
@@ -48,7 +49,7 @@ export default createRoute(async (c) => {
 					<div dangerouslySetInnerHTML={{ __html: post.htmlContent }} />
 				</article>
 
-				<section>
+				{/* <section>
 					<h2>コメント ({postComments.length})</h2>
 
 					<CommentList comments={postComments} />
@@ -60,7 +61,7 @@ export default createRoute(async (c) => {
 						content={contentParam}
 						success={success}
 					/>
-				</section>
+				</section> */}
 			</div>,
 		);
 	} catch (error) {
