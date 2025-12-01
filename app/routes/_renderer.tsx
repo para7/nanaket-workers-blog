@@ -4,7 +4,9 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 
 // export default jsxRenderer(({ children, title }) => {
-export default jsxRenderer(({ children }) => {
+export default jsxRenderer(({ children }, c) => {
+	const currentPath = c.req.path;
+
 	return (
 		<html lang="ja" data-theme="dark">
 			<head>
@@ -17,7 +19,7 @@ export default jsxRenderer(({ children }) => {
 				<Script src="/app/client.ts" async />
 			</head>
 			<body>
-				<Header />
+				<Header currentPath={currentPath} />
 
 				<main class="container">{children}</main>
 
