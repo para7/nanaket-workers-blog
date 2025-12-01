@@ -43,6 +43,9 @@ export default createRoute(async (c) => {
 								</time>
 							</p>
 						)}
+						<p>
+							<small>{post.viewCount} views</small>
+						</p>
 					</header>
 
 					<div dangerouslySetInnerHTML={{ __html: post.htmlContent }} />

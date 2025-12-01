@@ -1,4 +1,4 @@
-import { desc, eq, isNotNull } from "drizzle-orm";
+import { desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type * as schema from "../../drizzle/schema";
 import { posts } from "../../drizzle/schema";
@@ -18,6 +18,7 @@ export interface IPostsRepository {
 	findPublishedPosts(): Promise<PostListItem[]>;
 	findBySlug(slug: string): Promise<PostDetail | null>;
 	findById(id: number): Promise<Pick<PostDetail, "id" | "slug"> | null>;
+	incrementViewCount(id: number): Promise<void>;
 }
 
 // Repository関数（関数型アプローチ）
@@ -55,5 +56,12 @@ export const postsRepository = (
 			.limit(1);
 
 		return result[0] || null;
+	},
+
+	incrementViewCount: async (id: number) => {
+		await db
+			.update(posts)
+			.set({ viewCount: sql`${posts.viewCount} + 1` })
+			.where(eq(posts.id, id));
 	},
 });

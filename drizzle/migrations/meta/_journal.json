@@ -1,20 +1,27 @@
 {
-	"version": "7",
-	"dialect": "sqlite",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "6",
-			"when": 1764170394620,
-			"tag": "0000_aberrant_silver_samurai",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "6",
-			"when": 1764203367535,
-			"tag": "0001_productive_flatman",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1764170394620,
+      "tag": "0000_aberrant_silver_samurai",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1764203367535,
+      "tag": "0001_productive_flatman",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1764569192710,
+      "tag": "0002_skinny_mad_thinker",
+      "breakpoints": true
+    }
+  ]
 }
