@@ -34,6 +34,9 @@ export const postsUsecase = (repositories: IRepositories): IPostsUsecase => ({
 			throw new NotFoundError("記事が見つかりません");
 		}
 
+		// ビューカウントをインクリメント
+		await repositories.posts.incrementViewCount(post.id);
+
 		// Markdownレンダリング（ビジネスロジック）
 		const htmlContent = await marked(post.content);
 

@@ -6,6 +6,7 @@ export const posts = sqliteTable("posts", {
 	slug: text("slug").notNull().unique(),
 	content: text("content").notNull(),
 	publishedAt: integer("published_at", { mode: "timestamp" }),
+	viewCount: integer("view_count").notNull().default(0),
 	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.$defaultFn(() => new Date()),
