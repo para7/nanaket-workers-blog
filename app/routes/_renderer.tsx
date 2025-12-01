@@ -1,5 +1,7 @@
 import { jsxRenderer } from "hono/jsx-renderer";
 import { Link, Script } from "honox/server";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
 
 // export default jsxRenderer(({ children, title }) => {
 export default jsxRenderer(({ children }) => {
@@ -15,26 +17,11 @@ export default jsxRenderer(({ children }) => {
 				<Script src="/app/client.ts" async />
 			</head>
 			<body>
-				<header>
-					<nav>
-						<ul>
-							<li>
-								<strong class="text-3xl">
-									<a href="/">nanaket-workers-blog</a>
-								</strong>
-							</li>
-						</ul>
-					</nav>
-				</header>
+				<Header />
 
 				<main class="container">{children}</main>
 
-				<footer>
-					<small>
-						&copy; 2025 nanaket-workers-blog. Powered by HonoX and Cloudflare
-						Workers.
-					</small>
-				</footer>
+				<Footer />
 			</body>
 		</html>
 	);
