@@ -11,7 +11,7 @@ export default function Header({ currentPath }: HeaderProps) {
 				<ul>
 					<li>
 						<strong class="text-3xl">
-							<a href="/">nanaket-workers-blog</a>
+							<a href="/">nanaket-workers-blog(工事中)</a>
 						</strong>
 					</li>
 				</ul>
