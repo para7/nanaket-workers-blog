@@ -1,5 +1,5 @@
 type CommentFormProps = {
-	postId: number;
+	postSlug: string;
 	errors?: string[];
 	nickname?: string;
 	content?: string;
@@ -7,7 +7,7 @@ type CommentFormProps = {
 };
 
 export default function CommentForm({
-	postId,
+	postSlug,
 	errors = [],
 	nickname = "",
 	content = "",
@@ -34,7 +34,7 @@ export default function CommentForm({
 			)}
 
 			<form method="post" action="/api/comments">
-				<input type="hidden" name="postId" value={postId} />
+				<input type="hidden" name="postSlug" value={postSlug} />
 
 				<label htmlFor="nickname">
 					ニックネーム <abbr title="required">*</abbr>

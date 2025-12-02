@@ -5,7 +5,7 @@ import { NotFoundError, ValidationError } from "../../types/errors";
 export const POST = createRoute(async (c) => {
 	try {
 		const formData = await c.req.formData();
-		const postIdStr = formData.get("postId") as string;
+		const postSlugStr = formData.get("postSlug") as string;
 		const nickname = formData.get("nickname") as string;
 		const content = formData.get("content") as string;
 
@@ -32,7 +32,7 @@ export const POST = createRoute(async (c) => {
 
 		// Usecaseを呼び出し（ValidationError or NotFoundErrorがthrowされる可能性）
 		const postSlug = await c.var.usecases.comments.createComment({
-			postIdStr,
+			postSlugStr,
 			nickname,
 			content,
 			ipAddress,
@@ -45,13 +45,13 @@ export const POST = createRoute(async (c) => {
 		// バリデーションエラー
 		if (error instanceof ValidationError) {
 			const formData = await c.req.formData();
-			const postIdStr = formData.get("postId") as string;
+			const postSlugStr = formData.get("postSlug") as string;
 			const nickname = formData.get("nickname") as string;
 			const content = formData.get("content") as string;
 
 			const errorParam = encodeURIComponent(error.errors.join("|"));
 			return c.redirect(
-				`/posts/${postIdStr}?error=${errorParam}&nickname=${encodeURIComponent(nickname || "")}&content=${encodeURIComponent(content || "")}`,
+				`/posts/${postSlugStr}?error=${errorParam}&nickname=${encodeURIComponent(nickname || "")}&content=${encodeURIComponent(content || "")}`,
 			);
 		}
 

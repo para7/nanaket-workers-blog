@@ -1,5 +1,4 @@
 type PostCardProps = {
-	id: number;
 	title: string;
 	slug: string;
 	publishedAt: string | Date | null;

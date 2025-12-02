@@ -10,8 +10,7 @@ export default createRoute(async (c) => {
 			<h1>記事一覧</h1>
 			{postsList.map((post) => (
 				<PostCard
-					key={post.id}
-					id={post.id}
+					key={post.slug}
 					title={post.title}
 					slug={post.slug}
 					publishedAt={post.publishedAt}
