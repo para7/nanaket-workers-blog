@@ -6,7 +6,7 @@ export default function Header({ currentPath }: HeaderProps) {
 	const isActive = (path: string) => currentPath === path;
 
 	return (
-		<header>
+		<header class="container">
 			<nav>
 				<ul>
 					<li>
