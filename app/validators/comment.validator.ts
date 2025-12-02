@@ -1,7 +1,7 @@
 import { ValidationError } from "../types/errors";
 
 export type CommentInput = {
-	postIdStr: string;
+	postSlugStr: string;
 	nickname: string;
 	content: string;
 	ipAddress?: string | null;
@@ -9,7 +9,7 @@ export type CommentInput = {
 };
 
 export type ValidatedCommentInput = {
-	postId: number;
+	postSlug: string;
 	nickname: string;
 	content: string;
 	ipAddress?: string | null;
@@ -21,10 +21,11 @@ export function validateCommentInput(
 ): ValidatedCommentInput {
 	const errors: string[] = [];
 
-	// PostID検証
-	const postId = Number.parseInt(input.postIdStr, 10);
-	if (!input.postIdStr || Number.isNaN(postId)) {
-		errors.push("記事IDが不正です");
+	// PostSlug検証
+	if (!input.postSlugStr || typeof input.postSlugStr !== "string") {
+		errors.push("記事スラッグが不正です");
+	} else if (!/^[a-z0-9-_]+$/.test(input.postSlugStr)) {
+		errors.push("記事スラッグの形式が不正です");
 	}
 
 	// Nickname検証
@@ -46,7 +47,7 @@ export function validateCommentInput(
 	}
 
 	return {
-		postId,
+		postSlug: input.postSlugStr,
 		nickname: input.nickname,
 		content: input.content,
 		ipAddress: input.ipAddress,

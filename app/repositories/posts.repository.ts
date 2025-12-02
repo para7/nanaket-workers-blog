@@ -1,67 +1,107 @@
-import { desc, eq, isNotNull, sql } from "drizzle-orm";
-import type { DrizzleD1Database } from "drizzle-orm/d1";
-import type * as schema from "../../drizzle/schema";
-import { posts } from "../../drizzle/schema";
+import type { Fetcher } from "@cloudflare/workers-types";
+import matter from "gray-matter";
 
 // 型定義
 export type PostListItem = {
-	id: number;
 	title: string;
 	slug: string;
 	publishedAt: Date | null;
+	description?: string;
+	tags?: string[];
+	category?: string;
 };
 
-export type PostDetail = typeof posts.$inferSelect;
+export type PostDetail = {
+	title: string;
+	slug: string;
+	content: string; // Markdown生テキスト
+	publishedAt: Date | null;
+	description?: string;
+	tags?: string[];
+	category?: string;
+	author?: string;
+};
 
 // Interface定義
 export interface IPostsRepository {
 	findPublishedPosts(): Promise<PostListItem[]>;
 	findBySlug(slug: string): Promise<PostDetail | null>;
-	findById(id: number): Promise<Pick<PostDetail, "id" | "slug"> | null>;
-	incrementViewCount(id: number): Promise<void>;
 }
 
 // Repository関数（関数型アプローチ）
 export const postsRepository = (
-	db: DrizzleD1Database<typeof schema>,
+	assets: Fetcher | undefined,
+	baseUrl?: string,
 ): IPostsRepository => ({
 	findPublishedPosts: async () => {
-		return await db
-			.select({
-				id: posts.id,
-				title: posts.title,
-				slug: posts.slug,
-				publishedAt: posts.publishedAt,
-			})
-			.from(posts)
-			.where(isNotNull(posts.publishedAt))
-			.orderBy(desc(posts.publishedAt));
+		// /data/posts-metadata.json を fetch
+		const url = new URL("/data/posts-metadata.json", baseUrl || "").toString();
+		const response = assets ? await assets.fetch(url) : await fetch(url);
+
+		if (!response.ok) {
+			console.error("Failed to fetch posts metadata");
+			return [];
+		}
+
+		const data = (await response.json()) as {
+			posts: Array<{
+				title: string;
+				slug: string;
+				publishedAt: string | null;
+				description?: string;
+				tags?: string[];
+				category?: string;
+			}>;
+			buildTime: string;
+			totalCount: number;
+		};
+
+		// publishedAt != null でフィルタし、publishedAt降順でソート
+		return data.posts
+			.filter((p) => p.publishedAt !== null)
+			.map((p) => ({
+				title: p.title,
+				slug: p.slug,
+				publishedAt: new Date(p.publishedAt as string),
+				description: p.description,
+				tags: p.tags,
+				category: p.category,
+			}))
+			.sort(
+				(a: PostListItem, b: PostListItem) =>
+					(b.publishedAt?.getTime() || 0) - (a.publishedAt?.getTime() || 0),
+			);
 	},
 
 	findBySlug: async (slug: string) => {
-		const result = await db
-			.select()
-			.from(posts)
-			.where(eq(posts.slug, slug))
-			.limit(1);
+		try {
+			// /data/posts/{slug}.md を fetch
+			const url = new URL(`/data/posts/${slug}.md`, baseUrl || "").toString();
+			const response = assets ? await assets.fetch(url) : await fetch(url);
+			if (!response.ok) {
+				return null;
+			}
 
-		return result[0] || null;
-	},
+			const markdown = await response.text();
 
-	findById: async (id: number) => {
-		const result = await db
-			.select({ id: posts.id, slug: posts.slug })
-			.from(posts)
-			.where(eq(posts.id, id))
-			.limit(1);
+			// gray-matterでfrontmatterとcontentをパース
+			const { data: frontmatter, content } = matter(markdown);
 
-		return result[0] || null;
-	},
-
-	incrementViewCount: async (id: number) => {
-		await db
-			.update(posts)
-			.set({ viewCount: sql`${posts.viewCount} + 1` })
-			.where(eq(posts.id, id));
+			return {
+				title: frontmatter.title,
+				slug: frontmatter.slug,
+				content, // Markdown生テキスト
+				publishedAt: frontmatter.publishedAt
+					? new Date(frontmatter.publishedAt)
+					: null,
+				description: frontmatter.description,
+				tags: frontmatter.tags,
+				category: frontmatter.category,
+				author: frontmatter.author,
+			};
+		} catch (error) {
+			console.error(`Error fetching post ${slug}:`, error);
+			return null;
+		}
 	},
 });

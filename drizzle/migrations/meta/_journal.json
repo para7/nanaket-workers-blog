@@ -22,6 +22,13 @@
 			"when": 1764569192710,
 			"tag": "0002_skinny_mad_thinker",
 			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "6",
+			"when": 1733155200000,
+			"tag": "0003_migrate_to_static_posts",
+			"breakpoints": true
 		}
 	]
 }

@@ -7,7 +7,7 @@ import { comments } from "../../drizzle/schema";
 export type Comment = typeof comments.$inferSelect;
 
 export type CreateCommentInput = {
-	postId: number;
+	postSlug: string;
 	nickname: string;
 	content: string;
 	ipAddress?: string | null;
@@ -16,7 +16,7 @@ export type CreateCommentInput = {
 
 // Interface定義
 export interface ICommentsRepository {
-	findByPostId(postId: number): Promise<Comment[]>;
+	findByPostSlug(postSlug: string): Promise<Comment[]>;
 	create(input: CreateCommentInput): Promise<void>;
 }
 
@@ -24,17 +24,17 @@ export interface ICommentsRepository {
 export const commentsRepository = (
 	db: DrizzleD1Database<typeof schema>,
 ): ICommentsRepository => ({
-	findByPostId: async (postId: number) => {
+	findByPostSlug: async (postSlug: string) => {
 		return await db
 			.select()
 			.from(comments)
-			.where(eq(comments.postId, postId))
+			.where(eq(comments.postSlug, postSlug))
 			.orderBy(asc(comments.createdAt));
 	},
 
 	create: async (input: CreateCommentInput) => {
 		await db.insert(comments).values({
-			postId: input.postId,
+			postSlug: input.postSlug,
 			nickname: input.nickname,
 			content: input.content,
 			ipAddress: input.ipAddress,

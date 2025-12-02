@@ -5,7 +5,8 @@
 	"compatibility_date": "2025-11-26",
 	"compatibility_flags": ["nodejs_compat"],
 	"assets": {
-		"directory": "./dist"
+		"directory": "./dist",
+		"binding": "ASSETS"
 	},
 	"observability": {
 		"logs": {

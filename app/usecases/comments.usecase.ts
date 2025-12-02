@@ -18,15 +18,15 @@ export const commentsUsecase = (
 		// バリデーション（ValidationErrorをthrow）
 		const validated = validateCommentInput(input);
 
-		// 記事存在確認
-		const post = await repositories.posts.findById(validated.postId);
+		// 記事存在確認 (slug-based)
+		const post = await repositories.posts.findBySlug(validated.postSlug);
 		if (!post) {
 			throw new NotFoundError("指定された記事が見つかりません");
 		}
 
-		// コメント挿入
+		// コメント挿入 (slug-based)
 		await repositories.comments.create({
-			postId: validated.postId,
+			postSlug: validated.postSlug,
 			nickname: validated.nickname,
 			content: validated.content,
 			ipAddress: validated.ipAddress,

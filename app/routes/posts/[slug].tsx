@@ -41,7 +41,12 @@ export default createRoute(async (c) => {
 										day: "numeric",
 									})}
 								</time>
+								{" | "}
+								<span>閲覧数: {post.viewCount}</span>
 							</p>
+						)}
+						{post.tags && post.tags.length > 0 && (
+							<p>タグ: {post.tags.map((tag) => `#${tag}`).join(" ")}</p>
 						)}
 					</header>
 
@@ -54,7 +59,7 @@ export default createRoute(async (c) => {
 					<CommentList comments={postComments} />
 
 					<CommentForm
-						postId={post.id}
+						postSlug={post.slug}
 						errors={errors}
 						nickname={nicknameParam}
 						content={contentParam}

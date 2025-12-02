@@ -10,8 +10,15 @@ export const setup = createMiddleware(async (c, next) => {
 	// DB接続
 	const db = getDb(c);
 
+	// Assets Fetcher取得（本番環境のみ利用可能）
+	const assets = c.env.ASSETS;
+
+	// ベースURL取得（開発環境用フォールバック）
+	const url = new URL(c.req.url);
+	const baseUrl = url.origin;
+
 	// Repositories生成
-	const repos = repositories(db);
+	const repos = repositories(db, assets, baseUrl);
 
 	// Usecases生成
 	const cases = usecases(repos);

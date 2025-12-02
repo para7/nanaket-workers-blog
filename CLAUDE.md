@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a blog application built with HonoX (Hono + SSR framework) deployed on Cloudflare Workers, using Cloudflare D1 (SQLite) for database storage. The application supports blog posts with Markdown rendering and a commenting system.
+This is a blog application built with HonoX (Hono + SSR framework) deployed on Cloudflare Workers. Blog posts are managed as Git-tracked Markdown files with YAML frontmatter, compiled to static assets at build time. Cloudflare D1 (SQLite) is used for dynamic data (comments and view counts). The application supports Markdown rendering and a commenting system.
 
 ## Development Commands
 
@@ -85,8 +85,9 @@ app/
   │   └── db.ts          # Database helper (getDb function)
   ├── repositories/      # Data access layer (Repository pattern)
   │   ├── index.ts       # Repositories factory & interfaces
-  │   ├── posts.repository.ts
-  │   └── comments.repository.ts
+  │   ├── posts.repository.ts      # Fetch-based static asset access
+  │   ├── comments.repository.ts   # D1 database access
+  │   └── viewcounts.repository.ts # D1 database access
   ├── usecases/          # Business logic layer (Application services)
   │   ├── index.ts       # Usecases factory & interfaces
   │   ├── posts.usecase.ts
@@ -109,13 +110,23 @@ app/
   └── islands/           # Interactive client components
       └── counter.tsx
 
+content/
+  └── posts/             # Blog posts (Markdown + YAML frontmatter)
+      ├── hello-world.md
+      └── introduction-to-honox.md
+
 drizzle/
-  ├── schema.ts          # Database schema (posts, comments tables)
+  ├── schema.ts          # Database schema (viewcounts, comments tables)
   └── migrations/        # SQL migration files
 
 public/                  # Static assets
 
+vite-plugin-posts.ts     # Vite plugin for build-time post processing
+
 dist/                    # Build output (client + server bundles)
+  └── data/              # Generated at build time
+      ├── posts-metadata.json  # Aggregated post metadata
+      └── posts/         # Markdown files copied for runtime access
 ```
 
 ### Routing
@@ -133,7 +144,7 @@ This project implements a **3-layer architecture** with **Repository pattern** u
 ```
 Routes (Presentation) → Usecases (Application) → Repositories (Data Access)
                                                           ↓
-                                                    Database (D1)
+                                        Static Assets (posts) & Database (D1: comments, viewcounts)
 ```
 
 #### Layer Responsibilities
@@ -152,10 +163,11 @@ Routes (Presentation) → Usecases (Application) → Repositories (Data Access)
 - Return view models optimized for presentation
 
 **3. Repositories (`app/repositories/`)**: Data access layer
-- Database queries using Drizzle ORM
+- **PostsRepository**: Fetches static assets (JSON metadata and Markdown files) from `/data/` using `fetch()`
+- **CommentsRepository & ViewCountsRepository**: Database queries using Drizzle ORM for D1
 - CRUD operations
 - Query optimization
-- Return domain entities (inferred from schema)
+- Return domain entities
 
 **4. Validators (`app/validators/`)**: Input validation
 - Validate and sanitize user input
@@ -194,10 +206,16 @@ declare module "hono" {
 All layers use **factory functions** (not classes) that return objects implementing interfaces:
 
 ```typescript
-// Repository factory
-export const postsRepository = (db: DrizzleD1Database): IPostsRepository => ({
-  findPublishedPosts: async () => { /* ... */ },
+// Posts Repository factory (fetch-based, no DB dependency)
+export const postsRepository = (): IPostsRepository => ({
+  findPublishedPosts: async () => { /* fetch /data/posts-metadata.json */ },
+  findBySlug: async (slug: string) => { /* fetch /data/posts/{slug}.md */ },
+});
+
+// ViewCounts Repository factory (D1-based)
+export const viewcountsRepository = (db: DrizzleD1Database): IViewCountsRepository => ({
   findBySlug: async (slug: string) => { /* ... */ },
+  increment: async (slug: string) => { /* UPSERT logic */ },
 });
 
 // Usecase factory
@@ -227,27 +245,40 @@ getPostDetailBySlug: async (slug: string) => {
   const post = await repositories.posts.findBySlug(slug);
   if (!post) throw new NotFoundError("記事が見つかりません");
 
+  // Increment view count
+  await repositories.viewcounts.increment(slug);
+  const viewCount = await repositories.viewcounts.findBySlug(slug);
+
   // Business logic: Markdown rendering
   const htmlContent = await marked(post.content);
 
-  // Fetch related data
-  const comments = await repositories.comments.findByPostId(post.id);
+  // Fetch related data (slug-based)
+  const comments = await repositories.comments.findByPostSlug(slug);
 
   // Return view model
-  return { post: { ...post, htmlContent }, comments };
+  return { post: { ...post, htmlContent, viewCount }, comments };
 },
 ```
 
 **Repository** (`app/repositories/posts.repository.ts`):
 ```typescript
 findBySlug: async (slug: string) => {
-  const result = await db
-    .select()
-    .from(posts)
-    .where(eq(posts.slug, slug))
-    .limit(1);
+  const response = await fetch(`/data/posts/${slug}.md`);
+  if (!response.ok) return null;
 
-  return result[0] || null;
+  const markdown = await response.text();
+  const { data: frontmatter, content } = matter(markdown);
+
+  return {
+    title: frontmatter.title,
+    slug: frontmatter.slug,
+    content, // Markdown text
+    publishedAt: frontmatter.publishedAt ? new Date(frontmatter.publishedAt) : null,
+    description: frontmatter.description,
+    tags: frontmatter.tags,
+    category: frontmatter.category,
+    author: frontmatter.author,
+  };
 },
 ```
 
@@ -283,12 +314,51 @@ Components in `app/islands/` are hydrated on the client. These use Hono's JSX wi
 
 ### Database Schema
 Two main tables in `drizzle/schema.ts`:
-- **posts**: id, title, slug (unique), content (Markdown), publishedAt, createdAt, updatedAt
-- **comments**: id, postId (FK to posts with cascade delete), nickname, content, createdAt
-  - Index on postId for performance
+- **viewcounts**: slug (PK), count, createdAt, updatedAt
+  - Tracks view counts for blog posts by slug
+- **comments**: id, postSlug (slug-based reference, no FK), nickname, content, ipAddress, sessionId, createdAt
+  - Index on postSlug for performance
+  - Note: No foreign key constraint as posts are static assets. Validation is done at the application layer (Usecase).
 
-### Markdown Rendering
-Blog post content is stored as Markdown in the database and rendered to HTML at the **usecase layer** using the `marked` library (`app/usecases/posts.usecase.ts`). The HTML is included in the view model returned to routes, keeping presentation logic separate from business logic.
+### Content Management & Markdown Rendering
+
+#### Blog Post Format
+Blog posts are stored as Markdown files with YAML frontmatter in `content/posts/`:
+
+```markdown
+---
+title: "Post Title"
+slug: "post-slug"
+publishedAt: "2025-12-02T10:00:00+09:00"  # null for drafts
+description: "SEO description"
+tags: ["tag1", "tag2"]
+category: "Category Name"
+author: "Author Name"
+---
+
+# Post Content
+
+Markdown content goes here...
+```
+
+**Required fields**: `title`, `slug` (must match filename), `publishedAt` (for published posts)
+**Optional fields**: `description`, `tags`, `category`, `author`
+
+#### Build-Time Processing
+A custom Vite plugin (`vite-plugin-posts.ts`) processes Markdown files during build:
+
+1. Scans `content/posts/*.md`
+2. Parses frontmatter using `gray-matter`
+3. Validates (slug matches filename, required fields present, date format)
+4. Generates `dist/data/posts-metadata.json` with aggregated metadata
+5. Copies Markdown files to `dist/data/posts/` for runtime access
+
+#### Runtime Access
+- **PostsRepository** uses `fetch()` to read:
+  - `/data/posts-metadata.json` for post listings
+  - `/data/posts/{slug}.md` for individual posts
+- Markdown is rendered to HTML at the **usecase layer** using the `marked` library
+- The HTML is included in the view model returned to routes
 
 ## Development Notes
 

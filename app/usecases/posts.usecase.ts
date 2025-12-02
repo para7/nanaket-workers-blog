@@ -9,6 +9,7 @@ import { NotFoundError } from "../types/errors";
 
 export type PostDetailWithHtml = PostDetail & {
 	htmlContent: string;
+	viewCount: number;
 };
 
 export type PostDetailViewModel = {
@@ -35,18 +36,22 @@ export const postsUsecase = (repositories: IRepositories): IPostsUsecase => ({
 		}
 
 		// ビューカウントをインクリメント
-		await repositories.posts.incrementViewCount(post.id);
+		await repositories.viewcounts.increment(slug);
+
+		// ビューカウントを取得
+		const viewCount = await repositories.viewcounts.findBySlug(slug);
 
 		// Markdownレンダリング（ビジネスロジック）
 		const htmlContent = await marked(post.content);
 
-		// コメント取得
-		const comments = await repositories.comments.findByPostId(post.id);
+		// コメント取得 (slug-based)
+		const comments = await repositories.comments.findByPostSlug(slug);
 
 		return {
 			post: {
 				...post,
 				htmlContent,
+				viewCount,
 			},
 			comments,
 		};
